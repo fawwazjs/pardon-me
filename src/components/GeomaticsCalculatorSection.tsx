@@ -10,7 +10,6 @@ import {
   Map,
   Globe2,
   Layers,
-  Ruler,
   Camera,
   Activity,
   Plus,
@@ -75,16 +74,14 @@ export default function GeomaticsCalculatorSection() {
   };
 
   // --- 2. KOORDINAT & SISTEM GEODESI STATE ---
-  // DD to DMS
   const [ddInput, setDdInput] = useState("-6.9175");
   const ddVal = parseFloat(ddInput) || 0;
   const absDD = Math.abs(ddVal);
   const calcD = Math.floor(absDD);
   const calcM = Math.floor((absDD - calcD) * 60);
   const calcS = ((absDD - calcD - calcM / 60) * 3600).toFixed(2);
-  const calcDir = ddVal < 0 ? "S (LS)" : "N (LU)";
+  const calcDir = ddVal < 0 ? "S (Lintang Selatan)" : "N (Lintang Utara)";
 
-  // DMS to DD
   const [dmsDeg, setDmsDeg] = useState(6);
   const [dmsMin, setDmsMin] = useState(55);
   const [dmsSec, setDmsSec] = useState(3.0);
@@ -97,20 +94,19 @@ export default function GeomaticsCalculatorSection() {
   const uLong = parseFloat(utmLong) || 0;
   const uLat = parseFloat(utmLat) || 0;
   const utmZoneNum = Math.floor((uLong + 180) / 6) + 1;
-  const utmZoneHemisphere = uLat >= 0 ? "N (Utara)" : "S (Selatan)";
+  const utmZoneHemisphere = uLat >= 0 ? "Utara (N)" : "Selatan (S)";
   const centralMeridian = utmZoneNum * 6 - 183;
 
   // Undulasi Geoid (h = H + N)
-  const [geoidMode, setGeoidMode] = useState<"calc_h" | "calc_H" | "calc_N">("calc_H");
-  const [valH_ellipsoid, setValH_ellipsoid] = useState("782.45"); // h
-  const [valH_orthometric, setValH_orthometric] = useState("755.20"); // H
-  const [valN_undulation, setValN_undulation] = useState("27.25"); // N
+  const [geoidMode, setGeoidMode] = useState<"calc_H" | "calc_h" | "calc_N">("calc_H");
+  const [valH_ellipsoid, setValH_ellipsoid] = useState("782.45");
+  const [valH_orthometric, setValH_orthometric] = useState("755.20");
+  const [valN_undulation, setValN_undulation] = useState("27.25");
   const hEll = parseFloat(valH_ellipsoid) || 0;
   const hOrt = parseFloat(valH_orthometric) || 0;
   const nUnd = parseFloat(valN_undulation) || 0;
 
   // --- 3. SURVEI TERESTRIS STATE ---
-  // Sub-tab: Polar / Titik Baru
   const [terestrisSub, setTerestrisSub] = useState<"polar" | "waterpass" | "tacheometry" | "slope">("polar");
   const [polarX0, setPolarX0] = useState("790120.500");
   const [polarY0, setPolarY0] = useState("9234500.250");
@@ -127,13 +123,13 @@ export default function GeomaticsCalculatorSection() {
   const newY = (pY0 + deltaY).toFixed(3);
 
   // Sipat Datar / Waterpass
-  const [wpHa, setWpHa] = useState("750.000"); // Tinggi titik A
-  const [wpBaB, setWpBaB] = useState("1.650"); // Benang Atas Belakang
-  const [wpBtB, setWpBtB] = useState("1.500"); // Benang Tengah Belakang
-  const [wpBbB, setWpBbB] = useState("1.350"); // Benang Bawah Belakang
-  const [wpBaM, setWpBaM] = useState("1.420"); // Benang Atas Muka
-  const [wpBtM, setWpBtM] = useState("1.250"); // Benang Tengah Muka
-  const [wpBbM, setWpBbM] = useState("1.080"); // Benang Bawah Muka
+  const [wpHa, setWpHa] = useState("750.000");
+  const [wpBaB, setWpBaB] = useState("1.650");
+  const [wpBtB, setWpBtB] = useState("1.500");
+  const [wpBbB, setWpBbB] = useState("1.350");
+  const [wpBaM, setWpBaM] = useState("1.420");
+  const [wpBtM, setWpBtM] = useState("1.250");
+  const [wpBbM, setWpBbM] = useState("1.080");
 
   const btb = parseFloat(wpBtB) || 0;
   const btm = parseFloat(wpBtM) || 0;
@@ -146,14 +142,14 @@ export default function GeomaticsCalculatorSection() {
   const checkMuka = (parseFloat(wpBaM) || 0) + (parseFloat(wpBbM) || 0);
   const isValidMuka = Math.abs(checkMuka - 2 * btm) < 0.003;
 
-  // Takimetri (Total Station / Theodolite)
+  // Takimetri
   const [takiDistMode, setTakiDistMode] = useState<"slope" | "stadia">("slope");
-  const [takiSlopeDist, setTakiSlopeDist] = useState("85.400"); // Jarak miring
+  const [takiSlopeDist, setTakiSlopeDist] = useState("85.400");
   const [takiBa, setTakiBa] = useState("1.850");
   const [takiBb, setTakiBb] = useState("1.000");
-  const [takiVertDeg, setTakiVertDeg] = useState("12.5"); // Sudut miring
-  const [takiTi, setTakiTi] = useState("1.520"); // Tinggi instrumen
-  const [takiTp, setTakiTp] = useState("1.600"); // Tinggi target/prisma
+  const [takiVertDeg, setTakiVertDeg] = useState("12.5");
+  const [takiTi, setTakiTi] = useState("1.520");
+  const [takiTp, setTakiTp] = useState("1.600");
 
   const vRad = ((parseFloat(takiVertDeg) || 0) * Math.PI) / 180;
   const takiTiNum = parseFloat(takiTi) || 0;
@@ -173,7 +169,7 @@ export default function GeomaticsCalculatorSection() {
     takiDeltaH = 0.5 * sOptis * Math.sin(2 * vRad) + takiTiNum - takiTpNum;
   }
 
-  // Kemiringan Lereng / Slope
+  // Kemiringan Lereng
   const [slopeDeltaH, setSlopeDeltaH] = useState("15.2");
   const [slopeDatar, setSlopeDatar] = useState("120.0");
   const sDH = parseFloat(slopeDeltaH) || 0;
@@ -219,12 +215,12 @@ export default function GeomaticsCalculatorSection() {
   const realDistanceKm = ((dCm * sDenom) / 100000).toFixed(3);
 
   // --- 6. FOTOGRAMETRI & DRONE UAV STATE ---
-  const [droneH, setDroneH] = useState("120"); // Ketinggian terbang H (m)
-  const [focalLength, setFocalLength] = useState("8.8"); // Focal length f (mm)
-  const [sensorWidth, setSensorWidth] = useState("13.2"); // Lebar sensor Sw (mm)
-  const [imageWidthPx, setImageWidthPx] = useState("5472"); // Resolusi lebar sensor (px)
-  const [sensorHeight, setSensorHeight] = useState("8.8"); // Tinggi sensor Sh (mm)
-  const [imageHeightPx, setImageHeightPx] = useState("3648"); // Resolusi tinggi sensor (px)
+  const [droneH, setDroneH] = useState("120");
+  const [focalLength, setFocalLength] = useState("8.8");
+  const [sensorWidth, setSensorWidth] = useState("13.2");
+  const [imageWidthPx, setImageWidthPx] = useState("5472");
+  const [sensorHeight, setSensorHeight] = useState("8.8");
+  const [imageHeightPx, setImageHeightPx] = useState("3648");
 
   const dH = parseFloat(droneH) || 1;
   const fMm = parseFloat(focalLength) || 1;
@@ -233,7 +229,6 @@ export default function GeomaticsCalculatorSection() {
   const imW = parseFloat(imageWidthPx) || 1;
   const imH = parseFloat(imageHeightPx) || 1;
 
-  // GSD = (H * sW) / (f * imW) * 100 cm/px
   const gsdH = ((dH * sW) / (fMm * imW)) * 100;
   const photoScaleDenom = Math.round((dH * 1000) / fMm);
   const groundWidthM = ((sW * dH) / fMm).toFixed(1);
@@ -266,7 +261,6 @@ export default function GeomaticsCalculatorSection() {
     );
   };
 
-  // Shoelace formula
   let shoelaceArea = 0;
   let polygonPerimeter = 0;
   const nPoints = polyPoints.length;
@@ -304,7 +298,7 @@ export default function GeomaticsCalculatorSection() {
             Kalkulator & Geodesi
           </h2>
           <p className="text-stone-600 dark:text-rose-200/80 text-sm mt-2 max-w-xl mx-auto">
-            Rumus lengkap survei terestris, sistem koordinat, geodesi satelit, hingga fotogrametri UAV.
+            Rumus matematis lengkap survei terestris, sistem koordinat, geodesi satelit, hingga fotogrametri UAV.
           </p>
         </div>
 
@@ -416,7 +410,7 @@ export default function GeomaticsCalculatorSection() {
           </div>
         )}
 
-        {/* 2. KOORDINAT & SISTEM GEODESI (DD ⇄ DMS, ZONA UTM, UNDULASI GEOID) */}
+        {/* 2. KOORDINAT & SISTEM GEODESI */}
         {activeCategory === "coord" && (
           <div className="space-y-6">
             {/* DD ⇄ DMS */}
@@ -426,6 +420,15 @@ export default function GeomaticsCalculatorSection() {
                 <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono">
                   Desimal Derajat (DD) ➔ DMS
                 </h3>
+                
+                {/* Clean Math Formula Banner */}
+                <div className="p-3 rounded-xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-[11px] font-mono text-stone-700 dark:text-rose-200 space-y-1">
+                  <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">Rumus Matematis:</div>
+                  <div>D = ⌊|DD|⌋</div>
+                  <div>M = ⌊(|DD| − D) × 60⌋</div>
+                  <div>S = (|DD| − D − M/60) × 3600</div>
+                </div>
+
                 <div>
                   <label className="text-xs text-stone-500 dark:text-rose-300/70 block mb-1">
                     Nilai DD (misal: -6.9175):
@@ -437,13 +440,13 @@ export default function GeomaticsCalculatorSection() {
                     className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-sm font-mono text-stone-900 dark:text-white focus:outline-none focus:border-rose-500"
                   />
                 </div>
-                <div className="p-3 rounded-xl bg-rose-100/70 dark:bg-rose-900/40 text-rose-900 dark:text-rose-100 font-mono text-xs space-y-1">
+                <div className="p-3.5 rounded-xl bg-rose-100/70 dark:bg-rose-900/40 text-rose-900 dark:text-rose-100 font-mono text-xs space-y-1">
                   <div className="text-[10px] text-rose-600 dark:text-rose-300 font-semibold uppercase">Hasil Konversi:</div>
                   <div className="text-base font-bold">
                     {calcD}° {calcM}&apos; {calcS}&quot; {calcDir}
                   </div>
                   <div className="text-[10px] text-stone-500 dark:text-rose-300/70">
-                    D: {calcD}° | M: {calcM}&apos; | S: {calcS}&quot;
+                    Derajat: {calcD}° | Menit: {calcM}&apos; | Detik: {calcS}&quot;
                   </div>
                 </div>
               </div>
@@ -453,6 +456,18 @@ export default function GeomaticsCalculatorSection() {
                 <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono">
                   DMS ➔ Desimal Derajat (DD)
                 </h3>
+
+                {/* Clean Math Formula Banner */}
+                <div className="p-3 rounded-xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-[11px] font-mono text-stone-700 dark:text-rose-200 space-y-1">
+                  <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">Rumus Matematis:</div>
+                  <div className="font-semibold text-rose-700 dark:text-rose-300">
+                    DD = ± (Derajat + <sup>Menit</sup>/<sub>60</sub> + <sup>Detik</sup>/<sub>3600</sub>)
+                  </div>
+                  <div className="text-[10px] text-stone-500 dark:text-rose-300/70">
+                    Bertanda minus (−) untuk LS / BB, plus (+) untuk LU / BT
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-4 gap-2">
                   <div>
                     <label className="text-[10px] text-stone-500 dark:text-rose-300/70 block mb-1">Derajat (°)</label>
@@ -496,24 +511,33 @@ export default function GeomaticsCalculatorSection() {
                     </select>
                   </div>
                 </div>
-                <div className="p-3 rounded-xl bg-rose-100/70 dark:bg-rose-900/40 text-rose-900 dark:text-rose-100 font-mono text-xs space-y-1">
+                <div className="p-3.5 rounded-xl bg-rose-100/70 dark:bg-rose-900/40 text-rose-900 dark:text-rose-100 font-mono text-xs space-y-1">
                   <div className="text-[10px] text-rose-600 dark:text-rose-300 font-semibold uppercase">Hasil Konversi:</div>
                   <div className="text-base font-bold">{convertedDD}°</div>
-                  <div className="text-[10px] text-stone-500 dark:text-rose-300/70">
-                    Formula: {dmsDir === "S" || dmsDir === "W" ? "-" : "+"} (D + M/60 + S/3600)
-                  </div>
                 </div>
               </div>
             </div>
 
             {/* Zona UTM & Central Meridian */}
-            <div className="theme-card p-6 sm:p-8 rounded-3xl shadow-lg border border-rose-200/80 dark:border-rose-900/60">
-              <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono mb-4 flex items-center gap-2">
+            <div className="theme-card p-6 sm:p-8 rounded-3xl shadow-lg border border-rose-200/80 dark:border-rose-900/60 space-y-4">
+              <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono flex items-center gap-2">
                 <Globe2 className="w-4 h-4 text-rose-500" />
                 <span>Penetapan Zona UTM & Central Meridian (CM)</span>
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              {/* Clean Math Formula Banner */}
+              <div className="p-3 rounded-xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-[11px] font-mono text-stone-700 dark:text-rose-200 flex flex-wrap gap-x-6 gap-y-2">
+                <div>
+                  <span className="font-semibold text-rose-600 dark:text-rose-300">Nomor Zona UTM: </span>
+                  ⌊(Bujur + 180°) / 6⌋ + 1
+                </div>
+                <div>
+                  <span className="font-semibold text-rose-600 dark:text-rose-300">Meridian Sentral (λ₀): </span>
+                  (Zona × 6°) − 183°
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-stone-500 dark:text-rose-300/70 block mb-1">
                     Bujur / Longitude (°):
@@ -557,16 +581,35 @@ export default function GeomaticsCalculatorSection() {
             </div>
 
             {/* Hubungan Tinggi: h = H + N (Undulasi Geoid) */}
-            <div className="theme-card p-6 sm:p-8 rounded-3xl shadow-lg border border-rose-200/80 dark:border-rose-900/60">
-              <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono mb-2 flex items-center gap-2">
+            <div className="theme-card p-6 sm:p-8 rounded-3xl shadow-lg border border-rose-200/80 dark:border-rose-900/60 space-y-4">
+              <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono flex items-center gap-2">
                 <Layers className="w-4 h-4 text-rose-500" />
                 <span>Hubungan Tinggi Geodesi: h = H + N (Undulasi Geoid)</span>
               </h3>
-              <p className="text-xs text-stone-500 dark:text-rose-300/80 mb-4 font-light">
-                $h$ = Tinggi Elipsoid (GNSS/GPS), $H$ = Tinggi Ortometrik (MSL/Sipat Datar), $N$ = Undulasi Geoid.
-              </p>
 
-              <div className="flex gap-2 mb-4">
+              {/* Clean Math Formula Banner */}
+              <div className="p-3.5 rounded-2xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 font-mono text-xs text-stone-700 dark:text-rose-200 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-rose-600 dark:text-rose-300">
+                  <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                    h = H + N
+                  </span>
+                  <span>⇔</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                    H = h − N
+                  </span>
+                  <span>⇔</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                    N = h − H
+                  </span>
+                </div>
+                <div className="text-[11px] text-stone-500 dark:text-rose-300/80 pt-1 flex flex-wrap gap-x-4 gap-y-1">
+                  <span><strong>h</strong> = Tinggi Elipsoid (GNSS)</span>
+                  <span><strong>H</strong> = Tinggi Ortometrik (Sipat Datar / MSL)</span>
+                  <span><strong>N</strong> = Undulasi Geoid</span>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
                 <button
                   onClick={() => setGeoidMode("calc_H")}
                   className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-colors ${
@@ -599,7 +642,7 @@ export default function GeomaticsCalculatorSection() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-2 gap-3">
                 {geoidMode !== "calc_h" && (
                   <div>
                     <label className="text-[11px] text-stone-500 dark:text-rose-300/70 block mb-1">
@@ -656,7 +699,7 @@ export default function GeomaticsCalculatorSection() {
           </div>
         )}
 
-        {/* 3. SURVEI TERESTRIS (POLIGON POLAR, SIPAT DATAR, TAKIMETRI, KEMIRINGAN) */}
+        {/* 3. SURVEI TERESTRIS */}
         {activeCategory === "terestris" && (
           <div className="space-y-6">
             {/* Sub Nav */}
@@ -687,9 +730,24 @@ export default function GeomaticsCalculatorSection() {
                 <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono">
                   Hitungan Koordinat Titik Baru (Metode Polar / Sudut Jurusan & Jarak)
                 </h3>
-                <p className="text-xs text-stone-500 dark:text-rose-300/80 font-light">
-                  Rumus dasar: $X_B = X_A + d \cdot \sin(\alpha)$ dan $Y_B = Y_A + d \cdot \cos(\alpha)$
-                </p>
+
+                {/* Clean Math Formula Banner */}
+                <div className="p-3.5 rounded-2xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-xs font-mono text-stone-700 dark:text-rose-200 space-y-1.5">
+                  <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">
+                    Rumus Matematis:
+                  </div>
+                  <div className="flex flex-wrap gap-4 text-sm font-bold text-rose-600 dark:text-rose-300">
+                    <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                      X<sub>B</sub> = X<sub>A</sub> + d · sin(α)
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                      Y<sub>B</sub> = Y<sub>A</sub> + d · cos(α)
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-stone-500 dark:text-rose-300/80 pt-1">
+                    di mana <span className="font-semibold text-rose-600 dark:text-rose-300">ΔX = d · sin(α)</span> dan <span className="font-semibold text-rose-600 dark:text-rose-300">ΔY = d · cos(α)</span>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
@@ -743,10 +801,10 @@ export default function GeomaticsCalculatorSection() {
                   <div>
                     <span className="text-[10px] text-rose-600 dark:text-rose-300 uppercase block font-semibold">Koordinat Titik Baru (B):</span>
                     <div className="text-base font-bold text-rose-950 dark:text-white">
-                      X_B = {newX} m
+                      X<sub>B</sub> = {newX} m
                     </div>
                     <div className="text-base font-bold text-rose-950 dark:text-white">
-                      Y_B = {newY} m
+                      Y<sub>B</sub> = {newY} m
                     </div>
                   </div>
                 </div>
@@ -760,9 +818,30 @@ export default function GeomaticsCalculatorSection() {
                   Pengukuran Sipat Datar (Levelling / Waterpass)
                 </h3>
 
+                {/* Clean Math Formula Banner */}
+                <div className="p-3.5 rounded-2xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-xs font-mono text-stone-700 dark:text-rose-200 space-y-1.5">
+                  <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">
+                    Rumus Matematis:
+                  </div>
+                  <div className="flex flex-wrap gap-4 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-300">
+                    <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                      Δh = BT<sub>Belakang</sub> − BT<sub>Muka</sub>
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                      H<sub>B</sub> = H<sub>A</sub> + Δh
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                      Kontrol: 2 · BT = BA + BB
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                      d = (BA − BB) × 100
+                    </span>
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-xs text-stone-500 dark:text-rose-300/70 block mb-1">
-                    Tinggi Titik Awal / Benchmark $H_A$ (meter):
+                    Tinggi Titik Awal / Benchmark H<sub>A</sub> (meter):
                   </label>
                   <input
                     type="number"
@@ -863,13 +942,17 @@ export default function GeomaticsCalculatorSection() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-rose-100/70 dark:bg-rose-900/40 text-rose-900 dark:text-rose-100 font-mono text-xs">
                   <div>
-                    <span className="text-[10px] text-rose-600 dark:text-rose-300 uppercase block font-semibold">Beda Tinggi (Δh = BT_B - BT_M):</span>
+                    <span className="text-[10px] text-rose-600 dark:text-rose-300 uppercase block font-semibold">
+                      Beda Tinggi (Δh = BT<sub>B</sub> − BT<sub>M</sub>):
+                    </span>
                     <div className="text-lg font-bold">
                       {deltaH_wp >= 0 ? `+${deltaH_wp.toFixed(3)}` : deltaH_wp.toFixed(3)} meter
                     </div>
                   </div>
                   <div>
-                    <span className="text-[10px] text-rose-600 dark:text-rose-300 uppercase block font-semibold">Tinggi Titik B ($H_B = H_A + \Delta h$):</span>
+                    <span className="text-[10px] text-rose-600 dark:text-rose-300 uppercase block font-semibold">
+                      Tinggi Titik B (H<sub>B</sub> = H<sub>A</sub> + Δh):
+                    </span>
                     <div className="text-xl font-bold text-rose-950 dark:text-white">
                       {newHb} meter
                     </div>
@@ -884,6 +967,32 @@ export default function GeomaticsCalculatorSection() {
                 <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono">
                   Pengukuran Takimetri & Trigonometris (Total Station / Theodolite)
                 </h3>
+
+                {/* Clean Math Formula Banner */}
+                <div className="p-3.5 rounded-2xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-xs font-mono text-stone-700 dark:text-rose-200 space-y-1.5">
+                  <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">
+                    Rumus Matematis:
+                  </div>
+                  {takiDistMode === "slope" ? (
+                    <div className="flex flex-wrap gap-4 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-300">
+                      <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                        Jarak Datar: D = S · cos(V)
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                        Beda Tinggi: Δh = S · sin(V) + Ti − Tp
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-4 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-300">
+                      <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                        D = 100 · (BA − BB) · cos²(V)
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                        Δh = 50 · (BA − BB) · sin(2V) + Ti − Tp
+                      </span>
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex gap-2">
                   <button
@@ -994,6 +1103,24 @@ export default function GeomaticsCalculatorSection() {
                   Hitung Kemiringan Lereng (Slope, Grade % & Derajat)
                 </h3>
 
+                {/* Clean Math Formula Banner */}
+                <div className="p-3.5 rounded-2xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-xs font-mono text-stone-700 dark:text-rose-200 space-y-1.5">
+                  <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">
+                    Rumus Matematis:
+                  </div>
+                  <div className="flex flex-wrap gap-4 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-300">
+                    <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                      Grade (%) = (<sup>Δh</sup>/<sub>D</sub>) × 100%
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                      Sudut (θ) = arctan(<sup>Δh</sup>/<sub>D</sub>)
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                      Rasio = 1 : (<sup>D</sup>/<sub>Δh</sub>)
+                    </span>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs text-stone-500 dark:text-rose-300/70 block mb-1">
@@ -1042,10 +1169,31 @@ export default function GeomaticsCalculatorSection() {
 
         {/* 4. JARAK & AZIMUTH GEODETIK */}
         {activeCategory === "azimuth" && (
-          <div className="theme-card p-6 sm:p-8 rounded-3xl shadow-lg border border-rose-200/80 dark:border-rose-900/60 space-y-6">
+          <div className="theme-card p-6 sm:p-8 rounded-3xl shadow-lg border border-rose-200/80 dark:border-rose-900/60 space-y-5">
             <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono">
               Hitungan Jarak & Sudut Jurusan (Azimuth) Geodetik
             </h3>
+
+            {/* Clean Math Formula Banner */}
+            <div className="p-3.5 rounded-2xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-xs font-mono text-stone-700 dark:text-rose-200 space-y-1.5">
+              <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">
+                Rumus Geodesi (Haversine & Forward Azimuth):
+              </div>
+              <div className="flex flex-wrap gap-4 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-300">
+                <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                  a = sin²(<sup>Δφ</sup>/<sub>2</sub>) + cos(φ₁) · cos(φ₂) · sin²(<sup>Δλ</sup>/<sub>2</sub>)
+                </span>
+                <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                  c = 2 · atan2(√a, √(1−a))
+                </span>
+                <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                  d = R · c  (R = 6.371.000 m)
+                </span>
+              </div>
+              <div className="text-[11px] text-stone-500 dark:text-rose-300/80 pt-1">
+                Sudut Jurusan: <span className="font-semibold text-rose-600 dark:text-rose-300">α = atan2(sin Δλ · cos φ₂, cos φ₁ · sin φ₂ − sin φ₁ · cos φ₂ · cos Δλ)</span>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Titik A */}
@@ -1103,7 +1251,7 @@ export default function GeomaticsCalculatorSection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-2xl bg-rose-100/70 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-800">
                 <div className="text-[10px] font-mono text-rose-600 dark:text-rose-300 uppercase font-semibold">
-                  Jarak Geodetik (Haversine Formula)
+                  Jarak Geodetik (Permukaan Bumi)
                 </div>
                 <div className="text-xl font-bold text-rose-900 dark:text-rose-100 font-mono mt-1">
                   {haversineDistMeters} meter
@@ -1136,9 +1284,20 @@ export default function GeomaticsCalculatorSection() {
               <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono">
                 Koreksi Lengkung Bumi & Refraksi
               </h3>
-              <p className="text-xs text-stone-500 dark:text-rose-300/80 font-light">
-                Formula Standar: $C = 0.0675 \times D^2$ (k = 0.13)
-              </p>
+
+              {/* Clean Math Formula Banner */}
+              <div className="p-3 rounded-xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-[11px] font-mono text-stone-700 dark:text-rose-200 space-y-1">
+                <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">
+                  Rumus Matematis:
+                </div>
+                <div className="font-bold text-rose-700 dark:text-rose-300 text-sm">
+                  C = 0.0675 × D²  (meter)
+                </div>
+                <div className="text-[10px] text-stone-500 dark:text-rose-300/70">
+                  C = (1 − k) · (<sup>D²</sup>/<sub>2R</sub>)  dengan koefisien refraksi k = 0.13
+                </div>
+              </div>
+
               <div>
                 <label className="text-xs text-stone-500 dark:text-rose-300/70 block mb-1">
                   Jarak Bidik D (Kilometer):
@@ -1162,9 +1321,20 @@ export default function GeomaticsCalculatorSection() {
               <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono">
                 Kalkulator Skala Peta
               </h3>
-              <p className="text-xs text-stone-500 dark:text-rose-300/80 font-light">
-                Konversi jarak peta ke jarak lapangan
-              </p>
+
+              {/* Clean Math Formula Banner */}
+              <div className="p-3 rounded-xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-[11px] font-mono text-stone-700 dark:text-rose-200 space-y-1">
+                <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">
+                  Rumus Matematis:
+                </div>
+                <div className="font-bold text-rose-700 dark:text-rose-300">
+                  Jarak Sebenarnya = Jarak Peta (cm) × Penyebut Skala (n)
+                </div>
+                <div className="text-[10px] text-stone-500 dark:text-rose-300/70">
+                  Skala = 1 : (<sup>Jarak Lapangan</sup>/<sub>Jarak Peta</sub>)
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] text-stone-500 dark:text-rose-300/70 block mb-1">Jarak Peta (cm):</label>
@@ -1198,11 +1368,29 @@ export default function GeomaticsCalculatorSection() {
 
         {/* 6. FOTOGRAMETRI & DRONE UAV (GSD & CAKUPAN) */}
         {activeCategory === "photogrammetry" && (
-          <div className="theme-card p-6 sm:p-8 rounded-3xl shadow-lg border border-rose-200/80 dark:border-rose-900/60 space-y-6">
+          <div className="theme-card p-6 sm:p-8 rounded-3xl shadow-lg border border-rose-200/80 dark:border-rose-900/60 space-y-5">
             <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono flex items-center gap-2">
               <Camera className="w-4 h-4 text-rose-500" />
               <span>Fotogrametri Udara & Drone UAV (Ground Sampling Distance / GSD)</span>
             </h3>
+
+            {/* Clean Math Formula Banner */}
+            <div className="p-3.5 rounded-2xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-xs font-mono text-stone-700 dark:text-rose-200 space-y-1.5">
+              <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">
+                Rumus Matematis:
+              </div>
+              <div className="flex flex-wrap gap-4 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-300">
+                <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                  GSD = (<sup>H × S<sub>w</sub></sup>/<sub>f × I<sub>w</sub></sub>) × 100  (cm/pixel)
+                </span>
+                <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                  Skala Foto = 1 : (<sup>H × 1000</sup>/<sub>f</sub>)
+                </span>
+                <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                  Cakupan = (<sup>S<sub>w</sub> × H</sup>/<sub>f</sub>) × (<sup>S<sub>h</sub> × H</sup>/<sub>f</sub>)
+                </span>
+              </div>
+            </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
@@ -1268,13 +1456,13 @@ export default function GeomaticsCalculatorSection() {
         {/* 7. LUAS POLIGON TANAH (METODE SHOELACE KOORDINAT) */}
         {activeCategory === "area" && (
           <div className="theme-card p-6 sm:p-8 rounded-3xl shadow-lg border border-rose-200/80 dark:border-rose-900/60 space-y-5">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div>
                 <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-300 font-mono">
-                  Hitung Luas Bidang Tanah (Metode Koordinat Shoelace)
+                  Hitung Luas Bidang Tanah (Metode Koordinat Shoelace / Gauss)
                 </h3>
                 <p className="text-xs text-stone-500 dark:text-rose-300/80 font-light">
-                  Masukkan koordinat titik-titik batas bidang tanah berurutan searah jarum jam.
+                  Masukkan koordinat titik batas berurutan mengelilingi bidang tanah.
                 </p>
               </div>
               <button
@@ -1284,6 +1472,21 @@ export default function GeomaticsCalculatorSection() {
                 <Plus className="w-3.5 h-3.5" />
                 <span>Tambah Titik</span>
               </button>
+            </div>
+
+            {/* Clean Math Formula Banner */}
+            <div className="p-3.5 rounded-2xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/50 text-xs font-mono text-stone-700 dark:text-rose-200 space-y-1.5">
+              <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wider">
+                Rumus Matematis Shoelace (Gauss):
+              </div>
+              <div className="flex flex-wrap gap-4 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-300">
+                <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                  Luas = ½ |∑ (X<sub>i</sub> · Y<sub>i+1</sub> − Y<sub>i</sub> · X<sub>i+1</sub>)|
+                </span>
+                <span className="px-2 py-0.5 rounded bg-white dark:bg-rose-900/60 border border-rose-200/60 dark:border-rose-800">
+                  Keliling = ∑ √((X<sub>i+1</sub> − X<sub>i</sub>)² + (Y<sub>i+1</sub> − Y<sub>i</sub>)²)
+                </span>
+              </div>
             </div>
 
             {/* Points Table */}
